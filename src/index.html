@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="stylesheet" href="./styles/styles.css" />
+    <link rel="stylesheet" href="./styles/transition.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link rel="apple-touch-icon" href="/images/icon-192x192.png" />    
+    <title>Our Story</title>
+  </head>
+
+  <body>
+    <a href="#" id="skip-link" class="skip-link">Skip to content</a>
+
+    <header>
+      <div class="main-header container">
+        <a class="brand-name" href="#/">Our Story</a>
+
+        <nav id="navigation-drawer" class="navigation-drawer">
+          <ul id="nav-list" class="nav-list">
+
+            <li><a href="#/register" class="auth-link register-link">Register</a></li>
+
+            <li><a href="#/" class="main-link">Home</a></li>
+            <li><a href="#/saved" class="main-link">Saved</a></li>
+            <li><a href="#/add-story" class="main-link">Add Story</a></li>
+
+            <li><a href="#" id="logoutBtn" class="logout-link">Logout</a></li>
+          </ul>
+        </nav>
+
+        <button id="drawer-button" class="drawer-button" aria-label="Open Navigation Menu">☰</button>
+      </div>
+    </header>
+
+    <!-- Push Notification Toggle Button -->
+    <div id="push-notification-toggle" style="
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 999;
+      display: none;
+    ">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <span>🔔 Push Notifications</span>
+        <input type="checkbox" id="push-toggle-checkbox" style="width: 20px; height: 20px; cursor: pointer;" />
+      </label>
+      <small id="push-status" style="display: block; margin-top: 4px; color: #666;"></small>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('push-notification-toggle');
+      const checkbox = document.getElementById('push-toggle-checkbox');
+      const status = document.getElementById('push-status');
+
+      function updateVisibility() {
+        const token = localStorage.getItem('token');
+        const enabled = localStorage.getItem('pushEnabled') === 'true';
+        
+        if (!token || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+          toggle.style.display = 'none';
+          return;
+        }
+        
+        toggle.style.display = enabled ? 'none' : 'block';
+      }
+
+      function updateCheckbox() {
+        const enabled = localStorage.getItem('pushEnabled') === 'true';
+        checkbox.checked = enabled;
+        status.textContent = enabled ? '✓ Enabled' : 'Disabled';
+        status.style.color = enabled ? '#4CAF50' : '#666';
+      }
+
+      checkbox.addEventListener('change', async () => {
+        try {
+          status.textContent = 'Please wait...';
+          
+          if (checkbox.checked) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              localStorage.setItem('pushEnabled', 'true');
+              status.textContent = '✓ Enabled';
+              status.style.color = '#4CAF50';
+              
+              setTimeout(() => {
+                toggle.style.opacity = '0';
+                toggle.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                  toggle.style.display = 'none';
+                  toggle.style.opacity = '1';
+                }, 500);
+              }, 2000);
+            } else {
+              checkbox.checked = false;
+              status.textContent = 'Permission denied';
+              status.style.color = 'red';
+            }
+          } else {
+            localStorage.setItem('pushEnabled', 'false');
+            status.textContent = 'Disabled';
+            status.style.color = '#666';
+          }
+        } catch (err) {
+          console.error(err);
+          checkbox.checked = false;
+          status.textContent = 'Error';
+          status.style.color = 'red';
+        }
+      });
+
+      updateVisibility();
+      updateCheckbox();
+      window.addEventListener('hashchange', updateVisibility);
+    });
+    </script>
+
+    <main id="main-content" class="main-content"></main>
+
+    <!-- Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Main JS -->
+    <script type="module" src="/scripts/index.js"></script>
+
+    <script>
+      const skipLink = document.getElementById('skip-link');
+      if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          const mainContent = document.getElementById('main-content');
+          if (mainContent) {
+            // Set tabindex agar bisa di-focus
+            mainContent.setAttribute('tabindex', '-1');
+            // Focus ke main content
+            mainContent.focus();
+            // Smooth scroll
+            mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Remove tabindex setelah focus (best practice)
+            mainContent.addEventListener('blur', () => {
+              mainContent.removeAttribute('tabindex');
+            }, { once: true });
+          }
+        });
+      }
+
+      // Navbar Logic
+      function updateNavbar() {
+        const token = localStorage.getItem("token");
+
+        const registerLink = document.querySelector(".register-link");
+        const logoutLink = document.getElementById("logoutBtn");
+
+        if (!registerLink || !logoutLink) return;
+
+        if (token) {
+          registerLink.style.display = "none";
+          logoutLink.style.display = "block";
+        } else {
+          registerLink.style.display = "block";
+          logoutLink.style.display = "none";
+        }
+      }
+
+      // Update navbar saat halaman load dan saat hash berubah
+      document.addEventListener("DOMContentLoaded", updateNavbar);
+      window.addEventListener("hashchange", updateNavbar);
+
+      // Event logout
+      document.addEventListener("click", function (e) {
+        if (e.target.id === "logoutBtn") {
+          e.preventDefault();
+          localStorage.removeItem("token");
+          updateNavbar();
+          window.location.hash = "#/register";
+        }
+      });
+    </script>
+  </body>
+</html>

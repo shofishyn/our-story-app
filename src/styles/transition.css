@@ -1,0 +1,53 @@
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 400ms;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(root) {
+  animation-name: slide-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: slide-fade-in;
+}
+
+@keyframes slide-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+}
+
+@keyframes slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#main-content {
+  view-transition-name: page;
+}
+
+.register-link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.active-story {
+  background: #f0ffee;
+  border: 2px solid #22aa66;
+  transition: 0.2s ease;
+}
+
+
