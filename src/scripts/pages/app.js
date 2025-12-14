@@ -42,7 +42,6 @@ class App {
         const registration = await navigator.serviceWorker.register('/service-worker.js');
         console.log('[SW] Registered:', registration);
 
-        // Subscribe push notification setelah SW siap
         const regReady = await navigator.serviceWorker.ready;
         this.#subscribePush(regReady);
       } catch (err) {
@@ -59,10 +58,10 @@ class App {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      // Kirim subscription ke server Dicoding
-      const token = localStorage.getItem('accessToken'); // ambil token login user
-      if (!token) return; // hanya subscribe jika user login
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
 
+      // Kirim subscription ke Dicoding Story API
       const res = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
         method: 'POST',
         headers: {
@@ -72,7 +71,7 @@ class App {
         body: JSON.stringify(subscription),
       });
 
-      if (res.ok) console.log('[Push] Subscribed & sent to server');
+      if (res.ok) console.log('[Push] Subscribed & sent to Dicoding server');
       else console.error('[Push] Failed:', await res.text());
     } catch (err) {
       console.error('[Push] Error subscribing:', err);
