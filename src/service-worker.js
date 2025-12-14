@@ -33,6 +33,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (!request.url.startsWith('http')) return;
 
+  if (request.method !== 'GET') {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   const url = new URL(request.url);
 
   // API: Network First
@@ -46,7 +51,7 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(request).then((cached) => 
+        .catch(() => caches.match(request).then((cached) =>
           cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
             headers: { 'Content-Type': 'application/json' }
           })
