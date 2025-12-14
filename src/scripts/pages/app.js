@@ -1,14 +1,6 @@
 import routes from '../routes/routes.js';
 import { getActiveRoute } from '../routes/url-parser.js';
 
-// Helper VAPID converter (bisa di sini, bukan di SW)
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64String);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
-
 class App {
   #content = null;
   #drawerButton = null;
@@ -28,10 +20,8 @@ class App {
     });
 
     document.body.addEventListener('click', (event) => {
-      if (
-        !this.#navigationDrawer.contains(event.target) &&
-        !this.#drawerButton.contains(event.target)
-      ) {
+      if (!this.#navigationDrawer.contains(event.target) &&
+          !this.#drawerButton.contains(event.target)) {
         this.#navigationDrawer.classList.remove('open');
       }
 
@@ -60,12 +50,13 @@ class App {
   async #subscribePush(registration) {
     try {
       const VAPID_PUBLIC_KEY = 'BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk';
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      const token = localStorage.getItem('accessToken'); // token login user
+      const token = localStorage.getItem('accessToken');
       if (!token) return;
 
       const res = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
@@ -100,6 +91,14 @@ class App {
       if (page.afterRender) await page.afterRender();
     }
   }
+}
+
+// Helper untuk push
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
 export default App;
