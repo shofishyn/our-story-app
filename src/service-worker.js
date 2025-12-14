@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch
+// Fetch: Network First untuk API Dicoding
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (!request.url.startsWith('http')) return;
@@ -36,7 +36,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // API Dicoding: Network First
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
@@ -72,12 +71,12 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data?.json() || {};
   } catch(e) {}
-  const title = data.title || 'Our Story';
+  const title = data.title || 'Story berhasil dibuat';
   const options = {
-    body: data.body || 'New story added!',
+    body: data.options?.body || 'Anda telah membuat story baru.',
     icon: '/images/icon-192x192.png',
     badge: '/images/icon-72x72.png',
-    data: { url: data.url || '/' },
+    data: { url: '/' },
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -96,7 +95,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Helper: VAPID key converter
+// Helper VAPID
 export function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
