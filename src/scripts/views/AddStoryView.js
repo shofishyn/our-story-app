@@ -8,76 +8,156 @@ class AddStoryView {
     this.captured = false;
   }
 
-render() {
-  return `
-    <section class="page add-story-page">
-      <h1>Add Story</h1>
+  render() {
+    return `
+      <section class="page add-story-page">
+        <h1>Add Story</h1>
 
-      <form id="add-story-form">
-        <!-- Description -->
-        <label for="input-description">Description</label>
-        <textarea id="input-description" rows="4" required></textarea>
+        <form id="add-story-form">
+          <!-- Description -->
+          <label for="input-description">Description</label>
+          <textarea 
+            id="input-description"
+            name="description"
+            rows="4" 
+            required
+            aria-required="true"
+            aria-label="Story description"
+          ></textarea>
 
-        <!-- Photo Upload -->
-        <label for="input-photo">Photo (upload)</label>
-        <input type="file" id="input-photo" accept="image/*" />
+          <!-- Photo Upload -->
+          <label for="input-photo">Photo (upload)</label>
+          <input 
+            type="file" 
+            id="input-photo"
+            name="photo"
+            accept="image/*"
+            aria-label="Upload photo file"
+          />
 
-        <!-- Camera Buttons -->
-        <div style="margin:8px 0">
-          <button type="button" id="btn-camera">Use Camera</button>
-          <button type="button" id="btn-capture" style="display:none;">Capture Photo</button>
-          <button type="button" id="btn-close-camera" style="display:none;">Close Camera</button>
-        </div>
-
-        <!-- Camera Preview -->
-        <div id="camera-preview" style="display:none;">
-          <video id="video-stream" autoplay playsinline style="max-width:100%;"></video>
-          <canvas id="canvas-snapshot" style="display:none;"></canvas>
-        </div>
-
-        <!-- Location Section with Fieldset -->
-        <fieldset style="border:1px solid #ccc; padding:12px; margin:16px 0; border-radius:4px;">
-          <legend>Select Location (click on map)</legend>
-          
-          <!-- Map -->
-          <div id="mini-map" style="height: 300px; margin-bottom:12px;"></div>
-
-          <!-- Latitude Input -->
-          <div style="margin-bottom:8px;">
-            <label for="input-lat">Latitude</label>
-            <input 
-              type="text" 
-              id="input-lat" 
-              placeholder="Latitude" 
-              readonly 
-              aria-label="Latitude coordinate"
-            />
+          <!-- Camera Buttons -->
+          <div style="margin:8px 0">
+            <button 
+              type="button" 
+              id="btn-camera"
+              aria-label="Open camera"
+            >
+              Use Camera
+            </button>
+            <button 
+              type="button" 
+              id="btn-capture" 
+              style="display:none;"
+              aria-label="Capture photo"
+            >
+              Capture Photo
+            </button>
+            <button 
+              type="button" 
+              id="btn-close-camera" 
+              style="display:none;"
+              aria-label="Close camera"
+            >
+              Close Camera
+            </button>
           </div>
 
-          <!-- Longitude Input -->
-          <div style="margin-bottom:8px;">
-            <label for="input-lon">Longitude</label>
-            <input 
-              type="text" 
-              id="input-lon" 
-              placeholder="Longitude" 
-              readonly 
-              aria-label="Longitude coordinate"
-            />
+          <!-- Camera Preview -->
+          <div 
+            id="camera-preview" 
+            style="display:none;"
+            role="region"
+            aria-label="Camera preview"
+          >
+            <video 
+              id="video-stream" 
+              autoplay 
+              playsinline 
+              style="max-width:100%;"
+              aria-label="Camera stream"
+            ></video>
+            <canvas 
+              id="canvas-snapshot" 
+              style="display:none;"
+              aria-label="Photo snapshot"
+            ></canvas>
           </div>
-        </fieldset>
 
-        <!-- Submit Button -->
-        <div style="margin-top:12px">
-          <button id="btn-submit" type="submit">Submit Story</button>
-        </div>
+          <!-- Location Section with Fieldset -->
+          <fieldset style="border:1px solid #ccc; padding:12px; margin:16px 0; border-radius:4px;">
+            <legend>Select Location (click on map)</legend>
+            
+            <!-- Map -->
+            <div 
+              id="mini-map" 
+              style="height: 300px; margin-bottom:12px;"
+              role="application"
+              aria-label="Interactive map for location selection"
+            ></div>
 
-        <!-- Message Box -->
-        <div id="form-message" style="margin-top:8px" role="alert" aria-live="polite"></div>
-      </form>
-    </section>
-  `;
-}
+            <!-- Latitude Input -->
+            <div style="margin-bottom:8px;">
+              <label for="input-lat">Latitude</label>
+              <input 
+                type="text" 
+                id="input-lat"
+                name="latitude"
+                placeholder="Latitude" 
+                readonly 
+                aria-label="Latitude coordinate"
+                aria-describedby="lat-help"
+              />
+              <small 
+                id="lat-help" 
+                style="display:block; color:#666; font-size:0.85em;"
+              >
+                Click on the map to set latitude
+              </small>
+            </div>
+
+            <!-- Longitude Input -->
+            <div style="margin-bottom:8px;">
+              <label for="input-lon">Longitude</label>
+              <input 
+                type="text" 
+                id="input-lon"
+                name="longitude"
+                placeholder="Longitude" 
+                readonly 
+                aria-label="Longitude coordinate"
+                aria-describedby="lon-help"
+              />
+              <small 
+                id="lon-help" 
+                style="display:block; color:#666; font-size:0.85em;"
+              >
+                Click on the map to set longitude
+              </small>
+            </div>
+          </fieldset>
+
+          <!-- Submit Button -->
+          <div style="margin-top:12px">
+            <button 
+              id="btn-submit" 
+              type="submit"
+              aria-label="Submit story"
+            >
+              Submit Story
+            </button>
+          </div>
+
+          <!-- Message Box -->
+          <div 
+            id="form-message" 
+            style="margin-top:8px" 
+            role="alert" 
+            aria-live="polite"
+          ></div>
+        </form>
+      </section>
+    `;
+  }
 
   init() {
     this.container = document.querySelector('.add-story-page');
@@ -97,7 +177,9 @@ render() {
 
     const miniMapContainer = document.getElementById('mini-map');
     this.map = L.map(miniMapContainer).setView([-6.2, 106.8], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(this.map);
 
     this.map.on('click', (e) => {
       const { lat, lng } = e.latlng;
@@ -119,7 +201,10 @@ render() {
   async openCamera() {
     if (this.stream) return;
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' }, 
+        audio: false 
+      });
       this.video.srcObject = this.stream;
       this.cameraPreview.style.display = 'block';
       this.video.style.display = 'block';
@@ -129,7 +214,8 @@ render() {
       if (this.btnRetake) this.btnRetake.style.display = 'none';
       this.btnCamera.style.display = 'none';
       this.captured = false;
-    } catch {
+    } catch (error) {
+      console.error('Camera access error:', error);
       this.showError('Cannot access camera.');
     }
   }
@@ -159,6 +245,7 @@ render() {
         this.btnRetake = document.createElement('button');
         this.btnRetake.type = 'button';
         this.btnRetake.innerText = 'Retake Photo';
+        this.btnRetake.setAttribute('aria-label', 'Retake photo');
         this.btnRetake.style.marginLeft = '8px';
         this.cameraPreview.appendChild(this.btnRetake);
         this.btnRetake.addEventListener('click', () => this.retakePhoto());
@@ -203,9 +290,17 @@ render() {
     });
   }
 
-  showLoading() { this.showMessage('Submitting story...'); }
-  showError(msg) { this.showMessage(msg, true); }
-  showSuccess(msg) { this.showMessage(msg, false); }
+  showLoading() { 
+    this.showMessage('Submitting story...'); 
+  }
+  
+  showError(msg) { 
+    this.showMessage(msg, true); 
+  }
+  
+  showSuccess(msg) { 
+    this.showMessage(msg, false); 
+  }
 
   showMessage(msg, isError = false) {
     this.msgBox.innerText = msg;
