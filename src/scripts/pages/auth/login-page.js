@@ -10,10 +10,24 @@ export default class LoginPage {
 
         <form id="loginForm">
           <label for="email">Email</label>
-          <input id="email" type="email" required />
+          <input 
+            id="email" 
+            name="email" 
+            type="email" 
+            required 
+            aria-required="true"
+            aria-label="Email address"
+          />
 
           <label for="password">Password</label>
-          <input id="password" type="password" required />
+          <input 
+            id="password" 
+            name="password" 
+            type="password" 
+            required 
+            aria-required="true"
+            aria-label="Password"
+          />
 
           <button type="submit">Login</button>
         </form>
@@ -23,7 +37,7 @@ export default class LoginPage {
           <a href="#/register" class="register-link">Register here</a>
         </p>
 
-        <div id="login-message"></div>
+        <div id="login-message" role="alert" aria-live="polite"></div>
       </section>
     `;
   }
