@@ -35,6 +35,8 @@ class PushManager {
 
   async sendSubscriptionToServer(subscription, token) {
     try {
+      const subscriptionJSON = subscription.toJSON();
+      
       const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
         method: 'POST',
         headers: {
@@ -42,26 +44,28 @@ class PushManager {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          endpoint: subscription.endpoint,
+          endpoint: subscriptionJSON.endpoint,
           keys: {
-            p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
-            auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))))
+            p256dh: subscriptionJSON.keys.p256dh,
+            auth: subscriptionJSON.keys.auth
           }
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send subscription to server');
-      }
-
-      const result = await response.json();
-      console.log('[Push] Subscription sent to server:', result);
-      return result;
-    } catch (error) {
-      console.error('[Push] Error sending subscription:', error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Push] Server error:', errorData);
+      throw new Error(errorData.message || 'Failed to send subscription to server');
     }
+
+    const result = await response.json();
+    console.log('[Push] Subscription sent to server:', result);
+    return result;
+  } catch (error) {
+    console.error('[Push] Error sending subscription:', error);
+    throw error;
   }
+}
 
   async subscribe() {
     try {
@@ -182,3 +186,4 @@ class PushManager {
 
 const pushManager = new PushManager();
 export default pushManager;
+
