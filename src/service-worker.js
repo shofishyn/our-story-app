@@ -9,7 +9,7 @@ const STATIC_CACHE = [
 // Install
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_CACHE))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_CACHE))
   );
   self.skipWaiting();
 });
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
 // Activate
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(
+    caches.keys().then(keys => Promise.all(
       keys.map(key => key !== CACHE_NAME && caches.delete(key))
     ))
   );
@@ -36,7 +36,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // API Dicoding: Network First
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
@@ -47,16 +46,13 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(request).then(cached =>
-          cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
-            headers: { 'Content-Type': 'application/json' }
-          })
+        .catch(() => caches.match(request).then(cached => 
+          cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), { headers: { 'Content-Type': 'application/json' } })
         ))
     );
     return;
   }
 
-  // Static: Cache First
   event.respondWith(
     caches.match(request)
       .then(cached => cached || fetch(request).then(res => {
@@ -73,7 +69,9 @@ self.addEventListener('fetch', (event) => {
 // Push Notification
 self.addEventListener('push', (event) => {
   let data = {};
-  try { data = event.data?.json() || {}; } catch(e) {}
+  try {
+    data = event.data?.json() || {};
+  } catch(e) {}
   const title = data.title || 'Our Story';
   const options = {
     body: data.body || 'New story added!',
