@@ -8,24 +8,22 @@ export default class SavedPage {
     this._searchInput = null;
   }
 
-  async render() {
-    return `
-      <section class="container">
-        <h1>Saved Stories</h1>
-        
-        <div class="search-container" style="margin: 16px 0;">
-          <label for="search-input" style="display: block; margin-bottom: 8px; font-weight: bold;">
-            Search Stories
-          </label>
-          <input 
-            type="text" 
-            id="search-input"
-            name="search"
-            placeholder="🔍 Search stories by name or description..." 
-            style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;"
-            aria-label="Search stories by name or description"
-          />
-        </div>
+async render() {
+  return `
+    <section class="container">
+      <h1>Saved Stories</h1>
+      
+      <div class="search-container" style="margin: 16px 0;">
+        <label for="search-input" style="display: block; margin-bottom: 8px; font-weight: bold;">
+          Search Stories
+        </label>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="🔍 Search stories by name or description..." 
+          style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;"
+        />
+      </div>
 
         <div id="saved-story-list" role="region" aria-label="Saved stories list"></div>
       </section>
