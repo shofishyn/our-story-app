@@ -8,24 +8,20 @@ const STATIC_CACHE = [
 
 // Install
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(STATIC_CACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_CACHE))
   );
+  self.skipWaiting();
 });
 
 // Activate
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(
-        keys.map((key) => key !== CACHE_NAME && caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
+    caches.keys().then((keys) => Promise.all(
+      keys.map(key => key !== CACHE_NAME && caches.delete(key))
+    ))
   );
+  self.clients.claim();
 });
 
 // Fetch
@@ -40,22 +36,18 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // API: Network First
+  // API Dicoding: Network First
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
-        .then((res) => {
+        .then(res => {
           if (res.ok) {
             const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           }
           return res;
         })
-        .catch(() => caches.match(request).then((cached) =>
-          cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
-            headers: { 'Content-Type': 'application/json' }
-          })
-        ))
+        .catch(() => caches.match(request).then(cached => cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), { headers: { 'Content-Type': 'application/json' } })))
     );
     return;
   }
@@ -63,10 +55,10 @@ self.addEventListener('fetch', (event) => {
   // Static: Cache First
   event.respondWith(
     caches.match(request)
-      .then((cached) => cached || fetch(request).then((res) => {
-        if (res.ok && request.method === 'GET') {
+      .then(cached => cached || fetch(request).then(res => {
+        if (res.ok) {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
         }
         return res;
       }))
@@ -76,38 +68,38 @@ self.addEventListener('fetch', (event) => {
 
 // Push Notification
 self.addEventListener('push', (event) => {
-  let title = 'Our Story';
-  let options = {
-    body: 'New story added!',
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch(e) {}
+  const title = data.title || 'Our Story';
+  const options = {
+    body: data.body || 'New story added!',
     icon: '/images/icon-192x192.png',
     badge: '/images/icon-72x72.png',
-    tag: 'new-story',
-    data: { url: '/' }
+    data: { url: data.url || '/' },
   };
-
-  if (event.data) {
-    try {
-      const data = event.data.json();
-      title = data.title || title;
-      options.body = data.body || data.message || options.body;
-      options.data.url = data.url || options.data.url;
-    } catch (e) {}
-  }
-
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Notification Click
+// Notification click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/';
   event.waitUntil(
-    clients.matchAll({ type: 'window' })
-      .then((list) => {
-        for (let client of list) {
-          if (client.url === url && 'focus' in client) return client.focus();
-        }
-        if (clients.openWindow) return clients.openWindow(url);
-      })
+    clients.matchAll({ type: 'window' }).then(list => {
+      for (let client of list) {
+        if (client.url === url && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
   );
 });
+
+// Helper: VAPID key converter
+export function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
