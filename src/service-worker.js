@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: Network First untuk API Dicoding
+// Fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (!request.url.startsWith('http')) return;
@@ -36,6 +36,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
+  // API Dicoding: Network First
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
@@ -46,7 +47,11 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(request).then(cached => cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), { headers: { 'Content-Type': 'application/json' } })))
+        .catch(() => caches.match(request).then(cached =>
+          cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        ))
     );
     return;
   }
@@ -68,15 +73,13 @@ self.addEventListener('fetch', (event) => {
 // Push Notification
 self.addEventListener('push', (event) => {
   let data = {};
-  try {
-    data = event.data?.json() || {};
-  } catch(e) {}
-  const title = data.title || 'Story berhasil dibuat';
+  try { data = event.data?.json() || {}; } catch(e) {}
+  const title = data.title || 'Our Story';
   const options = {
-    body: data.options?.body || 'Anda telah membuat story baru.',
+    body: data.body || 'New story added!',
     icon: '/images/icon-192x192.png',
     badge: '/images/icon-72x72.png',
-    data: { url: '/' },
+    data: { url: data.url || '/' },
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -94,11 +97,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-
-// Helper VAPID
-export function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
