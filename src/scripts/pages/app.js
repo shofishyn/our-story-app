@@ -1,6 +1,12 @@
 import routes from '../routes/routes.js';
 import { getActiveRoute } from '../routes/url-parser.js';
-import { urlBase64ToUint8Array } from './service-worker.js';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64String);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
 
 class App {
   #content = null;
@@ -58,10 +64,9 @@ class App {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('accessToken'); // token login user
       if (!token) return;
 
-      // Kirim subscription ke Dicoding Story API
       const res = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
         method: 'POST',
         headers: {
@@ -71,7 +76,7 @@ class App {
         body: JSON.stringify(subscription),
       });
 
-      if (res.ok) console.log('[Push] Subscribed & sent to Dicoding server');
+      if (res.ok) console.log('[Push] Subscribed & sent to server');
       else console.error('[Push] Failed:', await res.text());
     } catch (err) {
       console.error('[Push] Error subscribing:', err);
