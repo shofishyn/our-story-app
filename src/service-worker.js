@@ -1,6 +1,4 @@
-// service-worker.js (FINAL - FIXED)
-
-const CACHE_NAME = 'our-story-v2';
+const CACHE_NAME = 'our-story-v1';
 const STATIC_CACHE = [
   '/',
   '/index.html',
@@ -8,6 +6,7 @@ const STATIC_CACHE = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
 ];
 
+// Install
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing...');
   event.waitUntil(
@@ -17,6 +16,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Activate
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating...');
   event.waitUntil(
@@ -28,28 +28,30 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  
   if (!request.url.startsWith('http')) return;
-  
+
   if (request.method !== 'GET') {
-    return; // PENTING: return aja, jangan event.respondWith
+    event.respondWith(fetch(request));
+    return;
   }
 
   const url = new URL(request.url);
 
+  // API: Network First
   if (url.origin === 'https://story-api.dicoding.dev') {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          if (res.ok && request.method === 'GET') {
+          if (res.ok) {
             const clone = res.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return res;
         })
-        .catch(() => caches.match(request).then((cached) => 
+        .catch(() => caches.match(request).then((cached) =>
           cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
             headers: { 'Content-Type': 'application/json' }
           })
@@ -58,6 +60,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Static: Cache First
   event.respondWith(
     caches.match(request)
       .then((cached) => cached || fetch(request).then((res) => {
@@ -71,6 +74,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Push Notification
 self.addEventListener('push', (event) => {
   let title = 'Our Story';
   let options = {
@@ -93,6 +97,7 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
+// Notification Click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/';
