@@ -47,7 +47,11 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(request).then(cached => cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), { headers: { 'Content-Type': 'application/json' } })))
+        .catch(() => caches.match(request).then(cached =>
+          cached || new Response(JSON.stringify({ error: true, message: 'Offline' }), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        ))
     );
     return;
   }
@@ -69,9 +73,7 @@ self.addEventListener('fetch', (event) => {
 // Push Notification
 self.addEventListener('push', (event) => {
   let data = {};
-  try {
-    data = event.data?.json() || {};
-  } catch(e) {}
+  try { data = event.data?.json() || {}; } catch(e) {}
   const title = data.title || 'Our Story';
   const options = {
     body: data.body || 'New story added!',
