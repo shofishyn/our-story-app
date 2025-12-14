@@ -10,13 +10,34 @@ export default class RegisterPage {
 
         <form id="registerForm">
           <label for="name">Full Name</label>
-          <input id="name" type="text" required />
+          <input 
+            id="name" 
+            name="name" 
+            type="text" 
+            required 
+            aria-required="true"
+            aria-label="Full name"
+          />
 
           <label for="email">Email</label>
-          <input id="email" type="email" required />
+          <input 
+            id="email" 
+            name="email" 
+            type="email" 
+            required 
+            aria-required="true"
+            aria-label="Email address"
+          />
 
           <label for="password">Password</label>
-          <input id="password" type="password" required />
+          <input 
+            id="password" 
+            name="password" 
+            type="password" 
+            required 
+            aria-required="true"
+            aria-label="Password"
+          />
 
           <button type="submit">Create Account</button>
         </form>
@@ -25,11 +46,10 @@ export default class RegisterPage {
           Have an account? <a href="#/login">Sign in here</a>
         </p>
 
-        <div id="register-message"></div>
+        <div id="register-message" role="alert" aria-live="polite"></div>
       </section>
     `;
   }
-
 
   afterRender() {
     const view = new RegisterView();
