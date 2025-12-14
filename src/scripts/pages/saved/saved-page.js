@@ -14,15 +14,20 @@ export default class SavedPage {
         <h1>Saved Stories</h1>
         
         <div class="search-container" style="margin: 16px 0;">
+          <label for="search-input" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Search Stories
+          </label>
           <input 
             type="text" 
-            id="search-input" 
+            id="search-input"
+            name="search"
             placeholder="🔍 Search stories by name or description..." 
             style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;"
+            aria-label="Search stories by name or description"
           />
         </div>
 
-        <div id="saved-story-list"></div>
+        <div id="saved-story-list" role="region" aria-label="Saved stories list"></div>
       </section>
     `;
   }
@@ -98,10 +103,19 @@ export default class SavedPage {
     container.innerHTML = storiesToShow
       .map(story => `
         <div class="story-card">
-          <img src="${story.photoUrl || ''}" alt="${story.name || ''}" />
+          <img 
+            src="${story.photoUrl || ''}" 
+            alt="${story.name ? `Photo of ${story.name}` : 'Story photo'}" 
+          />
           <h3>${story.name || ''}</h3>
           <p>${story.description || ''}</p>
-          <button class="btn-delete-story" data-id="${story.id}">🗑️ Delete</button>
+          <button 
+            class="btn-delete-story" 
+            data-id="${story.id}"
+            aria-label="Delete ${story.name || 'this story'}"
+          >
+            🗑️ Delete
+          </button>
         </div>
       `)
       .join("");
